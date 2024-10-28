@@ -117,26 +117,34 @@ INSERT INTO Products (product_name, description, price, stock, arrival, cat_id) 
 ('Denim Jacket', 'Unisex denim jacket', 75.00, 60, '2024-02-01', 4),
 ('Action Figure', 'Popular superhero action figure', 25.00, 80, '2024-02-25', 5);
 
-Alter Table Orders
-drop constraint 
+
 
 
 -- Insert sample data into Orders
 INSERT INTO Orders (total_amount, OStatus, UID) VALUES
 (1200.00, 'Completed', 1),
 (800.00, 'Completed', 1),
-(200.00, 'Pending', 2),
-(40.00, 'Shipped', 3),
-(100.00, 'Cancelled', 4);
--- Error Code: 1452. Cannot add or update a child row: a foreign key constraint fails (`ecom`.`orders`, CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`UID`) REFERENCES `users` (`UID`))
+(200.00, 'Pending', 7),
+(40.00, 'Shipped', 8),
+(100.00, 'Cancelled', 10);
+
+select * from users;
+
+select * from Orders;
+
+select * from Products;
+
+select * from orders;
 
 -- Insert sample data into Ordered_items
 INSERT INTO Ordered_items (product_id, quantity, unit_price, OrderID) VALUES
 (1, 1, 1200.00, 1),
-(2, 1, 800.00, 2),
-(4, 1, 200.00, 3),
-(5, 2, 20.00, 4),
-(7, 4, 25.00, 5);
+(2, 1, 800.00, 12),
+(4, 1, 200.00, 13),
+(5, 2, 20.00, 14),
+(7, 4, 25.00, 15);
+
+select * from Products;
 
 -- Insert sample data into Have (for Product-Category relationships)
 INSERT INTO Have (cat_id, product_id) VALUES
@@ -147,3 +155,17 @@ INSERT INTO Have (cat_id, product_id) VALUES
 (3, 5), -- Books -> Science Fiction Book
 (4, 6), -- Clothing -> Denim Jacket
 (5, 7); -- Toys -> Action Figure
+
+
+
+
+
+
+
+
+
+
+
+
+
+
