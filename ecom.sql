@@ -184,3 +184,10 @@ FROM Products p
 JOIN Categories c ON p.cat_id = c.cat_id;
 
 select * from Product_Inventory;
+
+-- -Nested Sub query
+
+SELECT U.Fname, U.LName, O.total_amount
+FROM Users U
+JOIN Orders O ON U.UID = O.UID
+WHERE O.total_amount = (SELECT MAX(total_amount) FROM Orders);
