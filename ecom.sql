@@ -123,14 +123,6 @@ INSERT INTO Orders (total_amount, OStatus, UID) VALUES
 (40.00, 'Shipped', 8),
 (100.00, 'Cancelled', 10);
 
-select * from users;
-
-select * from Orders;
-
-select * from Products;
-
-select * from orders;
-
 -- Insert sample data into Ordered_items
 INSERT INTO Ordered_items (product_id, quantity, unit_price, OrderID) VALUES
 (1, 1, 1200.00, 1),
@@ -176,10 +168,19 @@ CREATE VIEW Active_Orders AS
 SELECT o.OrderID, o.total_amount, o.OStatus, u.Fname, u.LName, u.UEmail
 FROM Orders o
 JOIN Users u ON o.UID = u.UID
-WHERE o.OStatus = 'Pending';
+WHERE o.OStatus = 'Active_Orders';
 
 CREATE VIEW Completed_Orders AS
 SELECT o.OrderID, o.total_amount, o.OStatus, u.Fname, u.LName, u.UEmail
 FROM Orders o
 JOIN Users u ON o.UID = u.UID
 WHERE o.OStatus = 'Completed';
+
+select * from Completed_Orders;
+
+CREATE VIEW Product_Inventory AS
+SELECT p.product_name, p.stock, p.price, c.cat_name
+FROM Products p
+JOIN Categories c ON p.cat_id = c.cat_id;
+
+select * from Product_Inventory;
