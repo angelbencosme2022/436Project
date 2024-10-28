@@ -186,6 +186,7 @@ JOIN Categories c ON p.cat_id = c.cat_id;
 select * from Product_Inventory;
 
 -- -Nested Sub query
+-- Returns Max Orders
 
 SELECT U.Fname, U.LName, O.total_amount
 FROM Users U
