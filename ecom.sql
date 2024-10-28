@@ -1,8 +1,6 @@
 create schema ecom;
 
-
 use ecom;
-
 
 -- Table for Users
 CREATE TABLE Users (
@@ -117,9 +115,6 @@ INSERT INTO Products (product_name, description, price, stock, arrival, cat_id) 
 ('Denim Jacket', 'Unisex denim jacket', 75.00, 60, '2024-02-01', 4),
 ('Action Figure', 'Popular superhero action figure', 25.00, 80, '2024-02-25', 5);
 
-
-
-
 -- Insert sample data into Orders
 INSERT INTO Orders (total_amount, OStatus, UID) VALUES
 (1200.00, 'Completed', 1),
@@ -156,16 +151,35 @@ INSERT INTO Have (cat_id, product_id) VALUES
 (4, 6), -- Clothing -> Denim Jacket
 (5, 7); -- Toys -> Action Figure
 
+select * from Users;
 
+select * from Orders;
 
+select * from Ordered_items;
 
+select * from Categories;
 
+select * from Products;
 
+-- Retrieve all ordered items with order and product details.
+SELECT o.OrderID, oi.quantity, p.product_name, oi.unit_price, o.OStatus
+FROM Ordered_items oi
+INNER JOIN Orders o ON oi.OrderID = o.OrderID
+INNER JOIN Products p ON oi.product_id = p.product_id;
 
+SELECT u.UID, u.Fname, u.LName, SUM(o.total_amount) AS total_spent
+FROM Users u
+JOIN Orders o ON u.UID = o.UID
+GROUP BY u.UID, u.Fname, u.LName;
 
+CREATE VIEW Active_Orders AS
+SELECT o.OrderID, o.total_amount, o.OStatus, u.Fname, u.LName, u.UEmail
+FROM Orders o
+JOIN Users u ON o.UID = u.UID
+WHERE o.OStatus = 'Pending';
 
-
-
-
-
-
+CREATE VIEW Completed_Orders AS
+SELECT o.OrderID, o.total_amount, o.OStatus, u.Fname, u.LName, u.UEmail
+FROM Orders o
+JOIN Users u ON o.UID = u.UID
+WHERE o.OStatus = 'Completed';
