@@ -4,7 +4,7 @@ import mysql.connector
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    password= "yourpassword",
+    password= "A445a445.123.525",
     database="ecom"
     
 )

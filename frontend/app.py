@@ -1,4 +1,14 @@
 from flask import Flask, request, render_template
+import mysql.connector
+
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="yourpassword",
+    database="ecom"
+)
+
+mycursor = db.cursor()
 
 app = Flask(__name__)
 
@@ -13,14 +23,17 @@ def login():
     email = request.form['Email']
     password = request.form['password']
 
-    # For now, just print the credentials
-    print(f"Email: {email}, Password: {password}")
+    # Query the Users table
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM Users WHERE UEmail = %s AND UPassword = %s", (email, password))
+    user = cursor.fetchone()
 
-    # Add your login logic here (e.g., check credentials in a database)
-    if email == "admin@example.com" and password == "password":
+    # Check if user exists
+    if user:
         return "Login Successful!"
     else:
-        return "Invalid credentials. Please try again."
+        # Render the login page again with an error message
+        return render_template('index.html', error="Invalid credentials. Please try again.")
 
 if __name__ == '__main__':
     app.run(debug=True)
