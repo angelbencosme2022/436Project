@@ -48,11 +48,13 @@
 
         // Fetch products from the server
         async function fetchProducts() {
-            const response = await fetch('/search_page');
+            const response = await fetch('/search_page', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
             const products = await response.json();
             renderProducts(products);
-            console.log(products);
         }
+        
 
         // Render products
         function renderProducts(products) {

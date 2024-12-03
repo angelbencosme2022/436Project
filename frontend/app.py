@@ -1,4 +1,5 @@
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, jsonify
+
 import mysql.connector
 from flask_cors import CORS
 
@@ -67,24 +68,31 @@ def register():
     # Redirect to the login page after successful registration
     return redirect(url_for('login_page'))
 
+from flask import jsonify
+
+
 @app.route('/search_page', methods=['GET'])
 def search_page():
     cursor = db.cursor()
     cursor.execute("SELECT product_name, price, description FROM Products")
     products = cursor.fetchall()
 
-    product_list = []
-    for product in products:
-        product_info = {
+    product_list = [
+        {
             'product_name': product[0],
             'price': product[1],
             'description': product[2]
         }
-        product_list.append(product_info)
-        
-    print(product_list)
+        for product in products
+    ]
+
+    # Check if it's an AJAX request
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify(product_list)
     
-    return render_template('search.html', products=product_list)  # Render the search.html template with the product list
+    # For regular browser requests
+    return render_template('search.html', products=product_list)
+
 
 
 if __name__ == '__main__':
