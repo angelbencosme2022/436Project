@@ -1,6 +1,14 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for
+import mysql.connector
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
 import mysql.connector
 
+
+
+# Database connection
 db = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -8,14 +16,12 @@ db = mysql.connector.connect(
     database="ecom"
 )
 
-mycursor = db.cursor()
-
 app = Flask(__name__)
 
 @app.route('/')
 def login_page():
-    # Render the HTML form
-    return render_template('index.html')  # Ensure your HTML file is in a 'templates' folder
+    # Render the login page
+    return render_template('index.html')  # Ensure this file is in a 'templates' folder
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -30,19 +36,18 @@ def login():
 
     # Check if user exists
     if user:
-        return "Login Successful!"
+        # Redirect to the search page on successful login
+        return redirect(url_for('search_page'))
     else:
         # Render the login page again with an error message
         return render_template('index.html', error="Invalid credentials. Please try again.")
-    
-    
+
 @app.route('/register_page')
 def register_page():
-    # Render the HTML form
+    # Render the registration page
     return render_template('signUp.html')
-    
-@app.route('/register', methods=['POST'])
 
+@app.route('/register', methods=['POST'])
 def register():
     # Get form data
     first_name = request.form['first-name']
@@ -53,13 +58,37 @@ def register():
 
     # Insert the user into the Users table
     cursor = db.cursor()
-    cursor.execute("INSERT INTO Users (FName, M_I , LName , UEmail, UPassword,URole) VALUES (%s, %s , %s, %s ,%s , %s)", (first_name ,middle_name, last_name, email, password , 'customer'))
+    cursor.execute(
+        "INSERT INTO Users (FName, M_I, LName, UEmail, UPassword, URole) VALUES (%s, %s, %s, %s, %s, %s)",
+        (first_name, middle_name, last_name, email, password, 'customer')
+    )
     db.commit()
 
-    return "Registration Successful!"
+    # Redirect to the login page after successful registration
+    return redirect(url_for('login_page'))
+
+@app.route('/search_page', methods=['GET'])
+def search_page():
+    cursor = db.cursor()
+    cursor.execute("SELECT product_name, price, description FROM Products")
+    products = cursor.fetchall()
+
+    product_list = []
+    for product in products:
+        product_info = {
+            'product_name': product[0],
+            'price': product[1],
+            'description': product[2]
+        }
+        product_list.append(product_info)
+        
+    print(product_list)
+    
+    return render_template('search.html', products=product_list)  # Render the search.html template with the product list
 
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 

@@ -1,127 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>E-commerce Website</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    .product {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .product h3 {
-      margin: 0;
-    }
-    .cart {
-      margin-top: 20px;
-      border: 1px solid #ccc;
-      padding: 10px;
-    }
-    .cart-item {
-      margin-bottom: 10px;
-    }
-    .product-list, .cart {
-      max-width: 600px;
-      margin: auto;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .product {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .product h3 {
+            margin: 0;
+        }
+        .cart {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        .cart-item {
+            margin-bottom: 10px;
+        }
+        .product-list, .cart {
+            max-width: 600px;
+            margin: auto;
+        }
+    </style>
 </head>
 <body>
-  <h1>E-commerce Store</h1>
+    <h1>E-commerce Store</h1>
+    <div class="product-list" id="product-list"></div>
 
-  <div class="product-list" id="product-list">
-    <!-- Products will be dynamically added here -->
-  </div>
+    <h2>Your Shopping Cart</h2>
+    <div class="cart" id="cart">
+        <p>Your cart is empty.</p>
+    </div>
 
-  <h2>Your Shopping Cart</h2>
-  <div class="cart" id="cart">
-    <p>Your cart is empty.</p>
-  </div>
+    <script>
+        const cartItems = [];
 
-  <script>
-    // Mock data (replace this with API calls for real data)
-    const products = [
-      { id: 1, name: "Laptop", description: "High-performance laptop", price: 1000, stock: 50 },
-      { id: 2, name: "Smartphone", description: "Latest model smartphone", price: 800, stock: 30 },
-      { id: 3, name: "Blender", description: "Electric blender", price: 150, stock: 20 },
-    ];
+        // Fetch products from the server
+        async function fetchProducts() {
+            const response = await fetch('/search_page');
+            const products = await response.json();
+            renderProducts(products);
+            console.log(products);
+        }
 
-    const cartItems = [];
+        // Render products
+        function renderProducts(products) {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = "";
+            products.forEach((product) => {
+                const productDiv = document.createElement('div');
+                productDiv.classList.add('product');
+                productDiv.innerHTML = `
+                    <div>
+                        <h3>${product.product_name}</h3>
+                        <p>${product.description}</p>
+                        <p>Price: $${product.price}</p>
+                    </div>
+                    <button onclick="addToCart('${product.product_name}', ${product.price})">Add to Cart</button>
+                `;
+                productList.appendChild(productDiv);
+            });
+        }
 
-    // Render product list
-    function renderProducts() {
-      const productList = document.getElementById("product-list");
-      productList.innerHTML = "";
-      products.forEach((product) => {
-        const productDiv = document.createElement("div");
-        productDiv.classList.add("product");
-        productDiv.innerHTML = `
-          <div>
-            <h3>${product.name}</h3>
-            <p>${product.description}</p>
-            <p>Price: $${product.price}</p>
-            <p>Stock: ${product.stock}</p>
-          </div>
-          <button onclick="addToCart(${product.id}, '${product.name}', ${product.price})">Add to Cart</button>
-        `;
-        productList.appendChild(productDiv);
-      });
-    }
+        // Add product to cart
+        function addToCart(name, price) {
+            const existingItem = cartItems.find((item) => item.name === name);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cartItems.push({ name, price, quantity: 1 });
+            }
+            renderCart();
+        }
 
-    // Add product to cart
-    function addToCart(id, name, price) {
-      const existingItem = cartItems.find((item) => item.id === id);
-      if (existingItem) {
-        existingItem.quantity++;
-      } else {
-        cartItems.push({ id, name, price, quantity: 1 });
-      }
-      renderCart();
-    }
+        // Render shopping cart
+        function renderCart() {
+            const cart = document.getElementById("cart");
+            cart.innerHTML = "";
+            if (cartItems.length === 0) {
+                cart.innerHTML = "<p>Your cart is empty.</p>";
+                return;
+            }
+            let total = 0;
+            cartItems.forEach((item) => {
+                total += item.price * item.quantity;
+                const cartItem = document.createElement("div");
+                cartItem.classList.add("cart-item");
+                cartItem.innerHTML = `
+                    <strong>${item.name}</strong> - $${item.price} x ${item.quantity}
+                    <button onclick="removeFromCart('${item.name}')">Remove</button>
+                `;
+                cart.appendChild(cartItem);
+            });
+            const totalDiv = document.createElement("div");
+            totalDiv.innerHTML = `<strong>Total: $${total.toFixed(2)}</strong>`;
+            cart.appendChild(totalDiv);
+        }
 
-    // Render shopping cart
-    function renderCart() {
-      const cart = document.getElementById("cart");
-      cart.innerHTML = "";
-      if (cartItems.length === 0) {
-        cart.innerHTML = "<p>Your cart is empty.</p>";
-        return;
-      }
-      let total = 0;
-      cartItems.forEach((item) => {
-        total += item.price * item.quantity;
-        const cartItem = document.createElement("div");
-        cartItem.classList.add("cart-item");
-        cartItem.innerHTML = `
-          <strong>${item.name}</strong> - $${item.price} x ${item.quantity}
-          <button onclick="removeFromCart(${item.id})">Remove</button>
-        `;
-        cart.appendChild(cartItem);
-      });
-      const totalDiv = document.createElement("div");
-      totalDiv.innerHTML = `<strong>Total: $${total.toFixed(2)}</strong>`;
-      cart.appendChild(totalDiv);
-    }
+        // Remove product from cart
+        function removeFromCart(name) {
+            const index = cartItems.findIndex((item) => item.name === name);
+            if (index > -1) {
+                cartItems.splice(index, 1);
+            }
+            renderCart();
+        }
 
-    // Remove product from cart
-    function removeFromCart(id) {
-      const index = cartItems.findIndex((item) => item.id === id);
-      if (index > -1) {
-        cartItems.splice(index, 1);
-      }
-      renderCart();
-    }
-
-    // Initialize the product list
-    renderProducts();
-  </script>
+        // Initialize
+        fetchProducts();
+    </script>
 </body>
 </html>
