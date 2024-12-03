@@ -19,6 +19,8 @@ db = mysql.connector.connect(
 
 app = Flask(__name__)
 
+
+
 @app.route('/')
 def login_page():
     # Render the login page
@@ -26,8 +28,10 @@ def login_page():
 
 @app.route('/login', methods=['POST'])
 def login():
+    global curr_Email
     # Get form data
     email = request.form['Email']
+    curr_Email = email
     password = request.form['password']
 
     # Query the Users table
@@ -38,6 +42,8 @@ def login():
     # Check if user exists
     if user:
         # Redirect to the search page on successful login
+        global curr_UID
+        curr_UID = user[0]
         return redirect(url_for('search_page'))
     else:
         # Render the login page again with an error message
@@ -69,6 +75,7 @@ def register():
     return redirect(url_for('login_page'))
 
 from flask import jsonify
+from datetime import datetime
 
 
 @app.route('/search_page', methods=['GET'])
@@ -94,6 +101,65 @@ def search_page():
     return render_template('search.html', products=product_list)
 
 
+
+@app.route('/add_funds', methods=['POST'])
+def add_funds():
+    # Check if the balance column exists, if not, add it
+    cursor = db.cursor()
+    cursor.execute("SHOW COLUMNS FROM Users LIKE 'balance'")
+    result = cursor.fetchone()
+    if not result:
+        cursor.execute("ALTER TABLE Users ADD COLUMN balance INT DEFAULT 0")
+        db.commit()
+
+        # Get the amount to add and the user's email
+    amount = int(request.form['amount'])
+    #email = request.form['email']
+
+        # Update the user's balance
+    print(curr_Email)
+    cursor.execute("UPDATE Users SET balance = balance + %s WHERE UEmail = %s", (amount, curr_Email))
+    db.commit()
+
+    return jsonify({"message": "Funds added successfully"})
+
+
+@app.route('/checkout_page', methods=['GET'])
+def checkout_page():
+    # Get the current user's balance
+    cursor = db.cursor()
+    cursor.execute("SELECT balance FROM Users WHERE UID = %s", (curr_UID,))
+    user_balance = cursor.fetchone()[0]
+    
+    # Render the checkout page with the user's balance
+    return jsonify({"balance": user_balance})
+
+@app.route('/confirm_checkout', methods=['POST'])
+def confirm_checkout():
+    total_amount = float(request.form['total_amount'])
+    OStatus = 'pending'
+    created_at = datetime.now()
+
+        # Check if the user has enough balance
+    cursor = db.cursor()
+    cursor.execute("SELECT balance FROM Users WHERE UEmail = %s", (curr_Email,))
+    user_balance = cursor.fetchone()[0]
+
+    if user_balance >= total_amount:
+            # Deduct the total amount from the user's balance
+        cursor.execute("UPDATE Users SET balance = balance - %s WHERE UEmail = %s", (total_amount, curr_Email))
+        db.commit()
+
+            # Insert the order into the Orders table
+        cursor.execute(
+            "INSERT INTO Orders (total_amount, OStatus, created_at, UID) VALUES (%s, %s, %s, %s)",
+            (total_amount, OStatus, created_at, curr_UID)
+        )
+        db.commit()
+
+        return jsonify({"message": "Order confirmed successfully"})
+    else:
+        return jsonify({"error": "Insufficient balance"}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)

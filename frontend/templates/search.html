@@ -106,6 +106,34 @@
     <header>
         E-commerce Store
     </header>
+    <div class="add-funds">
+        <h2>Add Funds</h2>
+        <form id="add-funds-form">
+            <input type="number" id="amount" placeholder="Enter amount" required>
+            <button type="submit">Add Funds</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('add-funds-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const amount = document.getElementById('amount').value;
+
+            const response = await fetch('/add_funds', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams({
+                    'amount': amount
+                })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        });
+    </script>
     <div class="container">
         <h1>Products</h1>
         <div class="product-list" id="product-list"></div>
@@ -114,12 +142,57 @@
         <div class="cart" id="cart">
             <p>Your cart is empty.</p>
         </div>
-
-         <!-- Checkout Button -->
-         <div class="checkout-button">
-            <button onclick="checkout()">Proceed to Checkout</button>
+        <!-- Checkout Section -->
+        <div class="checkout-section">
+            <h2>Checkout</h2>
+            <p>Your current balance: $<span id="user-balance"></span></p>
+            <form id="checkout-form">
+                <input type="hidden" id="total-amount" name="total_amount">
+                <button type="submit">Confirm Checkout</button>
+            </form>
         </div>
+
+        <script>
+            async function fetchUserBalance() {
+                const response = await fetch('/checkout_page', {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await response.json();
+                document.getElementById('user-balance').textContent = data.balance.toFixed(2);
+            }
+
+            document.getElementById('checkout-form').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+                document.getElementById('total-amount').value = totalAmount.toFixed(2);
+
+                const response = await fetch('/confirm_checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new URLSearchParams(new FormData(this))
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(result.message);
+                    cartItems.length = 0; // Clear the cart
+                    renderCart();
+                } else {
+                    alert(result.error);
+                }
+            });
+
+            // Initialize
+            fetchUserBalance();
+        </script>
+         <!-- Checkout Button -->
+      
         
+
     </div>
     <footer>
         © 2024 E-commerce Website
@@ -200,6 +273,9 @@
             }
             renderCart();
         }
+
+        // Checkou
+
 
         // Initialize
         fetchProducts();
